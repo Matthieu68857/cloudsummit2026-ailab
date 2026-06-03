@@ -1,4 +1,4 @@
-# Atelier Pratique (75 min) : Concevoir des Applications Agentiques avec AlloyDB, Gemini et MCP (Scénario Cinéma)
+# Concevoir des applications agentiques avec les bases de données Google Cloud
 
 > [!NOTE]
 > **Durée estimée :** 1h15 (75 minutes)  
@@ -20,37 +20,25 @@ Pour que vos agents IA soient réellement efficaces, vos bases de données doive
 | **Étape 1** | Configuration et Initialisation de la Base de Données | **15 min** |
 | **Étape 2** | L'IA à la source avec AlloyDB AI Operators | **15 min** |
 | **Étape 3** | Traduction sémantique prévisible avec QueryData | **15 min** |
-| **Étape 4** | Sécurisation des accès avec MCP et l'Agent Sémantique (ADK) | **15 min** |
+| **Étape 4** | Créer un agent avec ADK et MCP Toolbox for databases | **15 min** |
 | **Étape 5** | Agent Conversational Analytics depuis la Console AlloyDB | **15 min** |
 
 ---
 
 ## 🛠️ Étape 1 : Configuration et Initialisation de la Base de Données (15 min)
 
-Dans cet atelier, **l'infrastructure réseau, le cluster AlloyDB, les APIs, les droits Vertex AI et l'authentification ont été entièrement pré-configurés** par les organisateurs pour vous dans votre projet Google Cloud personnel. Vous n'avez donc aucune attente de provisionnement et pouvez entrer immédiatement dans le vif du sujet !
-
 ### 1.1 Récupérer les informations de connexion, configurer les variables et activer l'authentification IAM
 1. Dans la console Google Cloud, accédez au menu de gauche, puis allez dans **AlloyDB > Clusters**.
 2. Vous y trouverez un cluster actif nommé **`alloydb-cinema-cluster`** (dans la région **`us-central1`**).
 3. Cliquez sur le nom du cluster, puis faites défiler vers le bas pour localiser l'instance principale nommée **`alloydb-cinema-cluster-pr`**.
 4. Notez l'**Adresse IP publique** de cette instance (par exemple `34.120.45.67`).
-5. Ouvrez **Cloud Shell** dans votre console Google Cloud, définissez ces informations comme variables d'environnement, et créez votre utilisateur de base de données basé sur IAM (obligatoire pour l'utilisation de QueryData et des agents conversationnels d'analyse) :
+5. Ouvrez **Cloud Shell** dans votre console Google Cloud et définissez ces informations comme variables d'environnement :
    ```bash
    export REGION=us-central1
    export ADBCLUSTER=alloydb-cinema-cluster
    export ADB_PUBLIC_IP=34.120.45.67      # Remplacez par l'adresse IP publique notée ci-dessus
    export PGPASSWORD=BuildWithGemini2026
-
-   # Créer l'utilisateur de base de données pour votre compte Google Cloud (IAM)
-   gcloud alloydb users create $(gcloud config get-value account) \
-     --cluster=$ADBCLUSTER \
-     --superuser=true \
-     --region=$REGION \
-     --type=IAM_BASED
    ```
-
-> [!NOTE]
-> L'authentification IAM requiert que l'instance AlloyDB ait le drapeau de base de données (flag) `alloydb.iam_authentication=on` activé. Cela a été configuré pour vous par les organisateurs lors du provisionnement du cluster.
 
 ### 1.2 Création de la base de données cinema_db
 1. Toujours sur la page de votre instance principale `alloydb-cinema-cluster-pr`, cliquez sur **AlloyDB Studio** dans le menu de gauche.
@@ -530,7 +518,7 @@ Une fois enregistré :
 
 ---
 
-## 🛠️ Étape 4 : Sécurisation des accès avec MCP et l'Agent Sémantique (15 min)
+## 🛠️ Étape 4 : Créer un agent avec ADK et MCP Toolbox for databases (15 min)
 
 Pour s'assurer que les agents IA accèdent de manière sécurisée et contrôlée aux bases de données, nous utilisons le **Model Context Protocol (MCP)** et le serveur **MCP Toolbox for databases**.
 
