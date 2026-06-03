@@ -39,6 +39,64 @@
         "parameterized_intent": "Note moyenne des avis pour les films avec $1",
         "parameterized_sql": "SELECT m.title, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews FROM public.movie_reviews r INNER JOIN public.movies m ON r.movie_id = m.movie_id INNER JOIN public.movie_cast mc ON m.movie_id = mc.movie_id INNER JOIN public.actors a ON mc.actor_id = a.actor_id WHERE a.name = $1 GROUP BY m.title"
       }
+    },
+    {
+      "nlQuery": "Trouver les films incontournables du genre Science-Fiction",
+      "sql": "SELECT m.title, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews FROM public.movies m INNER JOIN public.movie_reviews r ON m.movie_id = r.movie_id INNER JOIN public.movie_genres mg ON m.movie_id = mg.movie_id INNER JOIN public.genres g ON mg.genre_id = g.genre_id WHERE g.name = 'Science-Fiction' GROUP BY m.title, m.movie_id HAVING COUNT(r.review_id) >= 2 AND AVG(r.rating) >= 4.5",
+      "intent": "Identifier les films incontournables d'un genre spécifique (définis par au moins 2 avis et une note moyenne >= 4.5)",
+      "manifest": "Trouver les films incontournables d'un genre spécifique",
+      "parameterized": {
+        "parameterized_intent": "Trouver les films incontournables du genre $1",
+        "parameterized_sql": "SELECT m.title, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews FROM public.movies m INNER JOIN public.movie_reviews r ON m.movie_id = r.movie_id INNER JOIN public.movie_genres mg ON m.movie_id = mg.movie_id INNER JOIN public.genres g ON mg.genre_id = g.genre_id WHERE g.name = $1 GROUP BY m.title, m.movie_id HAVING COUNT(r.review_id) >= 2 AND AVG(r.rating) >= 4.5"
+      }
+    },
+    {
+      "nlQuery": "Détecter les conflits de planification dans les salles de cinéma",
+      "sql": "SELECT s1.showtime_id AS showtime1_id, m1.title AS movie1_title, s2.showtime_id AS showtime2_id, m2.title AS movie2_title, t.name AS theater_name, s1.show_date, s1.start_time AS start1, s2.start_time AS start2 FROM public.showtimes s1 INNER JOIN public.movies m1 ON s1.movie_id = m1.movie_id INNER JOIN public.showtimes s2 ON s1.theater_id = s2.theater_id AND s1.show_date = s2.show_date AND s1.showtime_id < s2.showtime_id INNER JOIN public.movies m2 ON s2.movie_id = m2.movie_id INNER JOIN public.theaters t ON s1.theater_id = t.theater_id WHERE (s2.start_time >= s1.start_time AND s2.start_time < s1.start_time + (m1.duration_mins || ' minutes')::interval) OR (s1.start_time >= s2.start_time AND s1.start_time < s2.start_time + (m2.duration_mins || ' minutes')::interval)",
+      "intent": "Détecter les chevauchements de séances planifiées dans la même salle le même jour",
+      "manifest": "Détecter les conflits de planification de séances"
+    }
+  ],
+  "facets": [
+    {
+      "sql_snippet": "m.duration_mins > 120",
+      "intent": "films de plus de 2 heures",
+      "manifest": "Films ayant une durée supérieure à un nombre de minutes donné",
+      "parameterized": {
+        "parameterized_intent": "films de plus de $1 minutes",
+        "parameterized_sql_snippet": "m.duration_mins > $1"
+      }
+    },
+    {
+      "sql_snippet": "r.rating >= 4",
+      "intent": "bons avis",
+      "manifest": "Avis critiques avec une note supérieure ou égale à un seuil",
+      "parameterized": {
+        "parameterized_intent": "avis avec une note supérieure ou égale à $1",
+        "parameterized_sql_snippet": "r.rating >= $1"
+      }
+    }
+  ],
+  "value_searches": [
+    {
+      "query": "SELECT DISTINCT T.title as value, 'public.movies.title' as columns, 'Movie Title' as concept_type, 0 as distance, '{}'::text as context FROM public.movies T WHERE T.title ILIKE $value",
+      "concept_type": "Movie Title",
+      "description": "Recherche de titres de films"
+    },
+    {
+      "query": "SELECT DISTINCT T.name as value, 'public.actors.name' as columns, 'Actor Name' as concept_type, 0 as distance, '{}'::text as context FROM public.actors T WHERE T.name ILIKE $value",
+      "concept_type": "Actor Name",
+      "description": "Recherche de noms d'acteurs"
+    },
+    {
+      "query": "SELECT DISTINCT T.name as value, 'public.genres.name' as columns, 'Genre Name' as concept_type, 0 as distance, '{}'::text as context FROM public.genres T WHERE T.name ILIKE $value",
+      "concept_type": "Genre Name",
+      "description": "Recherche de genres de films"
+    },
+    {
+      "query": "SELECT DISTINCT T.screen_type as value, 'public.theaters.screen_type' as columns, 'Screen Type' as concept_type, 0 as distance, '{}'::text as context FROM public.theaters T WHERE T.screen_type ILIKE $value",
+      "concept_type": "Screen Type",
+      "description": "Recherche de types de salles de projection"
     }
   ]
 }
