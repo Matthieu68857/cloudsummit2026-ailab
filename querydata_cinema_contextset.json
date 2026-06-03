@@ -1,0 +1,44 @@
+{
+  "templates": [
+    {
+      "nlQuery": "Séances de cinéma disponibles aujourd'hui dans une salle IMAX pour les films de Science-Fiction",
+      "sql": "SELECT s.showtime_id, m.title, t.name AS theater_name, s.start_time, s.remaining_seats FROM public.showtimes s INNER JOIN public.movies m ON s.movie_id = m.movie_id INNER JOIN public.movie_genres mg ON m.movie_id = mg.movie_id INNER JOIN public.genres g ON mg.genre_id = g.genre_id INNER JOIN public.theaters t ON s.theater_id = t.theater_id WHERE g.name = 'Science-Fiction' AND t.screen_type = 'IMAX' AND s.show_date = CURRENT_DATE AND s.remaining_seats > 0 ORDER BY s.start_time ASC",
+      "intent": "Trouver les séances de cinéma pour un genre spécifique et un type d'écran donnés aujourd'hui",
+      "manifest": "Trouver les séances disponibles aujourd'hui pour un genre et un type de salle",
+      "parameterized": {
+        "parameterized_intent": "Séances disponibles aujourd'hui dans une salle $1 pour les films de $2",
+        "parameterized_sql": "SELECT s.showtime_id, m.title, t.name AS theater_name, s.start_time, s.remaining_seats FROM public.showtimes s INNER JOIN public.movies m ON s.movie_id = m.movie_id INNER JOIN public.movie_genres mg ON m.movie_id = mg.movie_id INNER JOIN public.genres g ON mg.genre_id = g.genre_id INNER JOIN public.theaters t ON s.theater_id = t.theater_id WHERE g.name = $2 AND t.screen_type = $1 AND s.show_date = CURRENT_DATE AND s.remaining_seats > 0 ORDER BY s.start_time ASC"
+      }
+    },
+    {
+      "nlQuery": "Distribution (acteurs) du film Inception",
+      "sql": "SELECT a.name AS actor_name, mc.role_name FROM public.movie_cast mc INNER JOIN public.actors a ON mc.actor_id = a.actor_id INNER JOIN public.movies m ON mc.movie_id = m.movie_id WHERE m.title = 'Inception'",
+      "intent": "Trouver la liste des acteurs et leurs rôles pour un film spécifique comme Inception",
+      "manifest": "Trouver la distribution d'un film spécifique",
+      "parameterized": {
+        "parameterized_intent": "Distribution (acteurs) du film $1",
+        "parameterized_sql": "SELECT a.name AS actor_name, mc.role_name FROM public.movie_cast mc INNER JOIN public.actors a ON mc.actor_id = a.actor_id INNER JOIN public.movies m ON mc.movie_id = m.movie_id WHERE m.title = $1"
+      }
+    },
+    {
+      "nlQuery": "Détails des réservations sous le nom de Alice Martin",
+      "sql": "SELECT t.ticket_id, m.title, s.show_date, s.start_time, th.name AS theater, t.seats_reserved FROM public.tickets t INNER JOIN public.showtimes s ON t.showtime_id = s.showtime_id INNER JOIN public.movies m ON s.movie_id = m.movie_id INNER JOIN public.theaters th ON s.theater_id = th.theater_id WHERE t.customer_name = 'Alice Martin'",
+      "intent": "Récupérer l'historique et les détails des réservations de billets pour un client spécifique comme Alice Martin",
+      "manifest": "Récupérer les détails des réservations d'un client",
+      "parameterized": {
+        "parameterized_intent": "Détails des réservations sous le nom de $1",
+        "parameterized_sql": "SELECT t.ticket_id, m.title, s.show_date, s.start_time, th.name AS theater, t.seats_reserved FROM public.tickets t INNER JOIN public.showtimes s ON t.showtime_id = s.showtime_id INNER JOIN public.movies m ON s.movie_id = m.movie_id INNER JOIN public.theaters th ON s.theater_id = th.theater_id WHERE t.customer_name = $1"
+      }
+    },
+    {
+      "nlQuery": "Note moyenne des avis pour les films avec Leonardo DiCaprio",
+      "sql": "SELECT m.title, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews FROM public.movie_reviews r INNER JOIN public.movies m ON r.movie_id = m.movie_id INNER JOIN public.movie_cast mc ON m.movie_id = mc.movie_id INNER JOIN public.actors a ON mc.actor_id = a.actor_id WHERE a.name = 'Leonardo DiCaprio' GROUP BY m.title",
+      "intent": "Calculer la note moyenne et le nombre total d'avis critiques pour les films dans lesquels joue un acteur particulier comme Leonardo DiCaprio",
+      "manifest": "Note moyenne des avis pour un acteur spécifique",
+      "parameterized": {
+        "parameterized_intent": "Note moyenne des avis pour les films avec $1",
+        "parameterized_sql": "SELECT m.title, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS total_reviews FROM public.movie_reviews r INNER JOIN public.movies m ON r.movie_id = m.movie_id INNER JOIN public.movie_cast mc ON m.movie_id = mc.movie_id INNER JOIN public.actors a ON mc.actor_id = a.actor_id WHERE a.name = $1 GROUP BY m.title"
+      }
+    }
+  ]
+}
