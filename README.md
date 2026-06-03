@@ -299,10 +299,8 @@ LIMIT 5;
 > L'opérateur `<=>` calcule la distance cosinus entre deux vecteurs. Une distance proche de 0 indique une forte similarité sémantique. Ici, **Interstellar** ressortira en première position sans avoir besoin de correspondance exacte par mot-clé.
 
 ### 2.2 Filtrage Sémantique avec `ai.if` (Optimisé)
-> [!WARNING]
-> **Avertissement de Performance :** Les fonctions comme `ai.if` interrogent un grand modèle de langage (LLM) sous-jacent. L'exécuter sur une table entière sans filtre force la base de données à appeler l'API de Vertex AI pour *chaque* ligne de la table, ce qui est extrêmement lent.
->
-> Pour garantir de bonnes performances, vous devez **toujours combiner l'opérateur IA avec des clauses de filtrage classiques** (par exemple en limitant la recherche aux IDs de films ou aux années de sortie récentes) pour restreindre l'appel de l'IA à un très petit nombre de lignes.
+> [!NOTE]
+> Les fonctions comme `ai.if` appellent un LLM en arrière-plan. Sur des tables volumineuses, il est recommandé de les combiner avec des filtres SQL classiques pour restreindre le nombre de lignes évaluées et optimiser les performances.
 
 Essayons avec une requête ciblée sur un sous-ensemble de films :
 ```sql
@@ -337,9 +335,7 @@ CREATE INDEX IF NOT EXISTS movies_tsvector_idx ON public.movies USING RUM (descr
 CREATE INDEX IF NOT EXISTS movies_vector_idx ON public.movies USING scann (description_embedding cosine) WITH (num_leaves=10);
 ```
 
-2. Activez les fonctions de préversion de l'IA et exécutez la recherche hybride.
-> [!IMPORTANT]
-> **Résolution du problème de typage (BIGINT) :** Par défaut, `ai.hybrid_search` retourne une colonne d'ID de type `TEXT`. Si vos clés primaires sont de type `BIGINT` (comme `movie_id`), la jointure générera une erreur d'incompatibilité de type. Pour résoudre ce problème, spécifiez explicitement le paramètre `id_type => NULL::BIGINT` pour forcer le transtypage automatique dans le bon format.
+2. Activez les fonctions de préversion de l'IA et exécutez la recherche hybride :
 
 ```sql
 SET google_ml_integration.enable_preview_ai_functions = true;
