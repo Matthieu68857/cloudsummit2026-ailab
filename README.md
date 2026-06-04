@@ -598,9 +598,9 @@ tools:
 EOF
 ```
 
-Lancez le serveur local sur le port par défaut :
+Lancez le serveur local sur le port par défaut avec l'interface graphique :
 ```bash
-./toolbox --config tools.yaml
+./toolbox --config tools.yaml --ui
 ```
 > [!NOTE]
 > Le serveur doit indiquer `Server ready to serve!` dans les journaux, confirmant l'exposition des outils dynamiques et statiques.
