@@ -82,7 +82,7 @@ CREATE TABLE public.movies (
     release_year INT,
     duration_mins INT,
     -- Génération automatique de l'embedding textuel
-    description_embedding vector(768) GENERATED ALWAYS AS (embedding('gemini-embedding-001', description)) STORED,
+    description_embedding vector(3072) GENERATED ALWAYS AS (embedding('gemini-embedding-001', description)) STORED,
     -- Génération automatique du tsvector en français pour le FTS
     description_tsvector tsvector GENERATED ALWAYS AS (to_tsvector('french', description)) STORED
 );
