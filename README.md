@@ -27,30 +27,21 @@ Pour que vos agents IA soient réellement efficaces, vos bases de données doive
 
 ## 🛠️ Étape 1 : Configuration et Initialisation de la Base de Données (15 min)
 
-### 1.1 Configurer les variables d'environnement
-1. Ouvrez **Cloud Shell** dans votre console Google Cloud.
-2. Définissez les variables d'environnement du cluster et récupérez automatiquement son adresse IP publique via `gcloud` :
-   ```bash
-   export REGION=us-central1
-   export ADBCLUSTER=alloydb-cinema-cluster
-   export ADB_PUBLIC_IP=$(gcloud alloydb instances describe alloydb-cinema-cluster-pr --cluster=alloydb-cinema-cluster --region=us-central1 --format="value(publicIpAddress)")
-   export PGPASSWORD=BuildWithGemini2026
-   ```
-
-### 1.2 Création de la base de données cinema_db
-1. Toujours sur la page de votre instance principale `alloydb-cinema-cluster-pr`, cliquez sur **AlloyDB Studio** dans le menu de gauche.
-2. Authentifiez-vous en utilisant l'authentification IAM avec les paramètres suivants :
+### 1.1 Création de la base de données cinema_db
+1. Dans la console Google Cloud, accédez à **AlloyDB > Clusters**, puis cliquez sur votre cluster **`alloydb-cinema-cluster`**.
+2. Sur la page de votre instance principale **`alloydb-cinema-cluster-pr`**, cliquez sur **AlloyDB Studio** dans le menu de gauche.
+3. Authentifiez-vous en utilisant l'authentification IAM avec les paramètres suivants :
    *   **Database** : `postgres`
    *   **Authentication Method** (Méthode d'authentification) : Sélectionnez `IAM database authentication` (Authentification de base de données IAM)
    *   **User** (Utilisateur) : Votre adresse email de compte Google (déjà sélectionnée par défaut si vous choisissez l'authentification IAM).
-3. Cliquez sur le bouton **Authenticate** (S'authentifier).
-4. Dans l'éditeur de requêtes d'AlloyDB Studio, exécutez la commande suivante pour créer notre base de données de travail :
+4. Cliquez sur le bouton **Authenticate** (S'authentifier).
+5. Dans l'éditeur de requêtes d'AlloyDB Studio, exécutez la commande suivante pour créer notre base de données de travail :
    ```sql
    CREATE DATABASE cinema_db;
    ```
-5. Une fois exécutée avec succès, cliquez sur le bouton **Switch user/database** (ou le bouton de changement d'utilisateur/base en haut à gauche) et reconnectez-vous à la base de données **`cinema_db`** en utilisant à nouveau l'**authentification IAM** avec votre adresse email Google.
+6. Une fois exécutée avec succès, cliquez sur le bouton **Switch user/database** (ou le bouton de changement d'utilisateur/base en haut à gauche) et reconnectez-vous à la base de données **`cinema_db`** en utilisant à nouveau l'**authentification IAM** avec votre adresse email Google.
 
-### 1.3 Initialisation des Extensions, du Schéma et des Données
+### 1.2 Initialisation des Extensions, du Schéma et des Données
 Copiez et exécutez le script SQL complet suivant dans l'éditeur de requêtes pour activer les extensions requises, créer le schéma des 9 tables et insérer notre jeu de données cinémato-graphique :
 
 ```sql
