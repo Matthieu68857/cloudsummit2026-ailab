@@ -385,9 +385,8 @@ Nous allons concevoir un fichier JSON (`querydata_cinema_contextset.json`) qui a
 7. Filtrer les films par durée ou par note minimale d'avis clients (via les **facets**).
 8. Associer sans ambiguïté des mots-clés de recherche en langage naturel aux valeurs de la base, comme les noms de films, d'acteurs, de genres et de types de salle (via les **value_searches**).
 
-Depuis votre terminal Google Cloud Shell local, créez le fichier suivant :
-```bash
-cat << 'EOF' > querydata_cinema_contextset.json
+Créez un fichier nommé `querydata_cinema_contextset.json` sur votre ordinateur local et collez-y le contenu suivant :
+```json
 {
   "templates": [
     {
@@ -490,19 +489,17 @@ cat << 'EOF' > querydata_cinema_contextset.json
     }
   ]
 }
-EOF
 ```
 
 ### 3.2 Charger le Context Set dans AlloyDB
-1. Téléchargez le fichier `querydata_cinema_contextset.json` généré depuis votre Cloud Shell vers votre ordinateur local.
-2. Dans la console GCP d'AlloyDB, ouvrez **AlloyDB Studio** (assurez-vous d'être connecté à la base de données `cinema_db` en utilisant l'**authentification IAM**).
-3. Dans la barre latérale de gauche, faites défiler vers le bas jusqu'à **Context sets** (Ensembles de contexte).
-4. Cliquez sur le bouton d'action (les trois petits points) et sélectionnez **Create context set** (Créer un ensemble de contexte).
-5. Remplissez les champs :
+1. Dans la console GCP d'AlloyDB, ouvrez **AlloyDB Studio** (assurez-vous d'être connecté à la base de données `cinema_db` en utilisant l'**authentification IAM**).
+2. Dans la barre latérale de gauche, faites défiler vers le bas jusqu'à **Context sets** (Ensembles de contexte).
+3. Cliquez sur le bouton d'action (les trois petits points) et sélectionnez **Create context set** (Créer un ensemble de contexte).
+4. Remplissez les champs :
    *   **Name** : `cinema_context`
    *   **Description** : `Contexte QueryData avancé pour la gestion du cinéma`
-   *   **Upload context file** : Importez votre fichier `querydata_cinema_contextset.json` téléchargé.
-6. Cliquez sur **Save**.
+   *   **Upload context file** : Importez le fichier `querydata_cinema_contextset.json` créé localement.
+5. Cliquez sur **Save**.
 
 ### 3.3 Valider le comportement de QueryData
 Une fois enregistré :
