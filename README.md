@@ -487,14 +487,14 @@ Créez un fichier nommé `querydata_cinema_contextset.json` sur votre ordinateur
 2. Dans la barre latérale de gauche, faites défiler vers le bas jusqu'à **Context sets** (Ensembles de contexte).
 3. Cliquez sur le bouton d'action (les trois petits points) et sélectionnez **Create context set** (Créer un ensemble de contexte).
 4. Remplissez les champs :
-   *   **Name** : `cinema_context`
+   *   **Name** : `cinema-context`
    *   **Description** : `Contexte QueryData avancé pour la gestion du cinéma`
    *   **Upload context file** : Importez le fichier `querydata_cinema_contextset.json` créé localement.
 5. Cliquez sur **Save**.
 
 ### 3.3 Valider le comportement de QueryData
 Une fois enregistré :
-1. Cliquez sur les trois points à côté de votre nouveau contexte `cinema_context` et sélectionnez **Test context set**.
+1. Cliquez sur les trois points à côté de votre nouveau contexte `cinema-context` et sélectionnez **Test context set**.
 2. Essayez de saisir différentes questions complexes en variant les paramètres :
    *   *« Trouver les films incontournables du genre Action »* (Déclenche la règle métier personnalisée avec agrégation et filtrage HAVING : note moyenne >= 4.5 et au moins 2 avis).
    *   *« Détecter les conflits de planification dans les salles de cinéma »* (Déclenche une auto-jointure complexe sur les séances avec arithmétique d'intervalles de temps que le LLM seul ne saurait générer).
@@ -563,7 +563,7 @@ context:
         instanceId: "alloydb-cinema-cluster-pr"
         databaseId: "cinema_db"
       agentContextReference:
-        contextSetId: "projects/$PROJECT_ID/locations/us-central1/contextSets/cinema_context"
+        contextSetId: "projects/$PROJECT_ID/locations/europe-west4/contextSets/cinema-context"
 generationOptions:
   generateQueryResult: true
   generateNaturalLanguageAnswer: true
@@ -686,7 +686,7 @@ En plus de l'agent ADK en Python, la console Google Cloud intègre un outil d'an
 ### 5.3 Lier votre Context Set QueryData
 Associons notre contexte pour guider l'intelligence de l'agent :
 1. Dans la section de configuration du contexte de l'agent, cochez l'option pour **Utiliser un ensemble de contexte existant** (Use Context Set).
-2. Choisissez le contexte **`cinema_context`** que vous avez créé et téléversé à l'étape 3.
+2. Choisissez le contexte **`cinema-context`** que vous avez créé et téléversé à l'étape 3.
 3. Grâce à cette association, l'agent d'analyse d'AlloyDB va directement hériter de vos filtres sémantiques complexes et de vos requêtes SQL paramétrées pour répondre de manière fiable et prévisible.
 4. Cliquez sur **Créer** (Create) ou **Sauvegarder**.
 
