@@ -37,9 +37,6 @@ Pour que vos agents IA soient réellement efficaces, vos bases de données doive
    export PGPASSWORD=BuildWithGemini2026
    ```
 
-> [!NOTE]
-> L'authentification IAM requiert que l'instance AlloyDB ait le drapeau de base de données (flag) `alloydb.iam_authentication=on` activé. Cela a été configuré pour vous par les organisateurs lors du provisionnement du cluster.
-
 ### 1.2 Création de la base de données cinema_db
 1. Toujours sur la page de votre instance principale `alloydb-cinema-cluster-pr`, cliquez sur **AlloyDB Studio** dans le menu de gauche.
 2. Authentifiez-vous en utilisant l'authentification IAM avec les paramètres suivants :
