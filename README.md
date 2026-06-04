@@ -586,7 +586,7 @@ parameters:
     description: Le nombre de places à réserver.
 statement: |
   INSERT INTO public.tickets (ticket_id, showtime_id, customer_name, seats_reserved)
-  VALUES ((SELECT COALESCE(MAX(ticket_id), 0) + 1 FROM public.tickets), $1, $2, $3)
+  VALUES ((SELECT COALESCE(MAX(ticket_id), 0) + 1 FROM public.tickets), \$1, \$2, \$3)
   RETURNING ticket_id, customer_name, seats_reserved;
 ---
 # 5. Ensemble d'outils (Toolset) pour charger tous les outils cinéma d'un coup
