@@ -27,21 +27,14 @@ Pour que vos agents IA soient réellement efficaces, vos bases de données doive
 
 ## 🛠️ Étape 1 : Configuration et Initialisation de la Base de Données (15 min)
 
-### 1.1 Configurer les variables d'environnement et activer l'authentification IAM
+### 1.1 Configurer les variables d'environnement
 1. Ouvrez **Cloud Shell** dans votre console Google Cloud.
-2. Définissez les variables d'environnement du cluster, récupérez automatiquement son adresse IP publique via `gcloud`, et créez votre utilisateur de base de données basé sur IAM (obligatoire pour l'utilisation de QueryData et des agents conversationnels d'analyse) :
+2. Définissez les variables d'environnement du cluster et récupérez automatiquement son adresse IP publique via `gcloud` :
    ```bash
    export REGION=us-central1
    export ADBCLUSTER=alloydb-cinema-cluster
    export ADB_PUBLIC_IP=$(gcloud alloydb instances describe alloydb-cinema-cluster-pr --cluster=alloydb-cinema-cluster --region=us-central1 --format="value(publicIpAddress)")
    export PGPASSWORD=BuildWithGemini2026
-
-   # Créer l'utilisateur de base de données pour votre compte Google Cloud (IAM)
-   gcloud alloydb users create $(gcloud config get-value account) \
-     --cluster=$ADBCLUSTER \
-     --superuser=true \
-     --region=$REGION \
-     --type=IAM_BASED
    ```
 
 > [!NOTE]
