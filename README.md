@@ -364,7 +364,7 @@ JOIN ai.hybrid_search(
         "query_text_input": "Inception"
       } $$::JSONB
   ],
-  id_type => NULL::BIGINT -- Résout l'erreur BIGINT de jointure
+  id_type => NULL::BIGINT
 ) AS search_results ON m.movie_id = search_results.id;
 ```
 
