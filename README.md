@@ -1,4 +1,4 @@
-# Concevoir des applications agentiques avec les bases de données Google Cloud
+# Atelier Pratique (75 min) : Concevoir des Applications Agentiques avec AlloyDB, Gemini et MCP (Scénario Cinéma)
 
 > [!NOTE]
 > **Durée estimée :** 1h15 (75 minutes)  
@@ -20,25 +20,32 @@ Pour que vos agents IA soient réellement efficaces, vos bases de données doive
 | **Étape 1** | Configuration et Initialisation de la Base de Données | **15 min** |
 | **Étape 2** | L'IA à la source avec AlloyDB AI Operators | **15 min** |
 | **Étape 3** | Traduction sémantique prévisible avec QueryData | **15 min** |
-| **Étape 4** | Créer un agent avec ADK et MCP Toolbox for databases | **15 min** |
+| **Étape 4** | Sécurisation des accès avec MCP et l'Agent Sémantique (ADK) | **15 min** |
 | **Étape 5** | Agent Conversational Analytics depuis la Console AlloyDB | **15 min** |
 
 ---
 
 ## 🛠️ Étape 1 : Configuration et Initialisation de la Base de Données (15 min)
 
-### 1.1 Récupérer les informations de connexion, configurer les variables et activer l'authentification IAM
-1. Dans la console Google Cloud, accédez au menu de gauche, puis allez dans **AlloyDB > Clusters**.
-2. Vous y trouverez un cluster actif nommé **`alloydb-cinema-cluster`** (dans la région **`us-central1`**).
-3. Cliquez sur le nom du cluster, puis faites défiler vers le bas pour localiser l'instance principale nommée **`alloydb-cinema-cluster-pr`**.
-4. Notez l'**Adresse IP publique** de cette instance (par exemple `34.120.45.67`).
-5. Ouvrez **Cloud Shell** dans votre console Google Cloud et définissez ces informations comme variables d'environnement :
+### 1.1 Configurer les variables d'environnement et activer l'authentification IAM
+1. Ouvrez **Cloud Shell** dans votre console Google Cloud.
+2. Définissez les variables d'environnement du cluster, récupérez automatiquement son adresse IP publique via `gcloud`, et créez votre utilisateur de base de données basé sur IAM (obligatoire pour l'utilisation de QueryData et des agents conversationnels d'analyse) :
    ```bash
    export REGION=us-central1
    export ADBCLUSTER=alloydb-cinema-cluster
-   export ADB_PUBLIC_IP=34.120.45.67      # Remplacez par l'adresse IP publique notée ci-dessus
+   export ADB_PUBLIC_IP=$(gcloud alloydb instances describe alloydb-cinema-cluster-pr --cluster=alloydb-cinema-cluster --region=us-central1 --format="value(publicIpAddress)")
    export PGPASSWORD=BuildWithGemini2026
+
+   # Créer l'utilisateur de base de données pour votre compte Google Cloud (IAM)
+   gcloud alloydb users create $(gcloud config get-value account) \
+     --cluster=$ADBCLUSTER \
+     --superuser=true \
+     --region=$REGION \
+     --type=IAM_BASED
    ```
+
+> [!NOTE]
+> L'authentification IAM requiert que l'instance AlloyDB ait le drapeau de base de données (flag) `alloydb.iam_authentication=on` activé. Cela a été configuré pour vous par les organisateurs lors du provisionnement du cluster.
 
 ### 1.2 Création de la base de données cinema_db
 1. Toujours sur la page de votre instance principale `alloydb-cinema-cluster-pr`, cliquez sur **AlloyDB Studio** dans le menu de gauche.
@@ -299,8 +306,10 @@ LIMIT 5;
 > L'opérateur `<=>` calcule la distance cosinus entre deux vecteurs. Une distance proche de 0 indique une forte similarité sémantique. Ici, **Interstellar** ressortira en première position sans avoir besoin de correspondance exacte par mot-clé.
 
 ### 2.2 Filtrage Sémantique avec `ai.if` (Optimisé)
-> [!NOTE]
-> Les fonctions comme `ai.if` appellent un LLM en arrière-plan. Sur des tables volumineuses, il est recommandé de les combiner avec des filtres SQL classiques pour restreindre le nombre de lignes évaluées et optimiser les performances.
+> [!WARNING]
+> **Avertissement de Performance :** Les fonctions comme `ai.if` interrogent un grand modèle de langage (LLM) sous-jacent. L'exécuter sur une table entière sans filtre force la base de données à appeler l'API de Vertex AI pour *chaque* ligne de la table, ce qui est extrêmement lent.
+>
+> Pour garantir de bonnes performances, vous devez **toujours combiner l'opérateur IA avec des clauses de filtrage classiques** (par exemple en limitant la recherche aux IDs de films ou aux années de sortie récentes) pour restreindre l'appel de l'IA à un très petit nombre de lignes.
 
 Essayons avec une requête ciblée sur un sous-ensemble de films :
 ```sql
@@ -335,7 +344,9 @@ CREATE INDEX IF NOT EXISTS movies_tsvector_idx ON public.movies USING RUM (descr
 CREATE INDEX IF NOT EXISTS movies_vector_idx ON public.movies USING scann (description_embedding cosine) WITH (num_leaves=10);
 ```
 
-2. Activez les fonctions de préversion de l'IA et exécutez la recherche hybride :
+2. Activez les fonctions de préversion de l'IA et exécutez la recherche hybride.
+> [!IMPORTANT]
+> **Résolution du problème de typage (BIGINT) :** Par défaut, `ai.hybrid_search` retourne une colonne d'ID de type `TEXT`. Si vos clés primaires sont de type `BIGINT` (comme `movie_id`), la jointure générera une erreur d'incompatibilité de type. Pour résoudre ce problème, spécifiez explicitement le paramètre `id_type => NULL::BIGINT` pour forcer le transtypage automatique dans le bon format.
 
 ```sql
 SET google_ml_integration.enable_preview_ai_functions = true;
@@ -384,8 +395,9 @@ Nous allons concevoir un fichier JSON (`querydata_cinema_contextset.json`) qui a
 7. Filtrer les films par durée ou par note minimale d'avis clients (via les **facets**).
 8. Associer sans ambiguïté des mots-clés de recherche en langage naturel aux valeurs de la base, comme les noms de films, d'acteurs, de genres et de types de salle (via les **value_searches**).
 
-Créez un fichier nommé `querydata_cinema_contextset.json` sur votre ordinateur local et collez-y le contenu suivant :
-```json
+Depuis votre terminal Google Cloud Shell local, créez le fichier suivant :
+```bash
+cat << 'EOF' > querydata_cinema_contextset.json
 {
   "templates": [
     {
@@ -488,16 +500,18 @@ Créez un fichier nommé `querydata_cinema_contextset.json` sur votre ordinateur
     }
   ]
 }
+EOF
 ```
 
 ### 3.2 Charger le Context Set dans AlloyDB
-1. Dans la console GCP d'AlloyDB, ouvrez **AlloyDB Studio** (assurez-vous d'être connecté à la base de données `cinema_db` en utilisant l'**authentification IAM**).
-2. Dans la barre latérale de gauche, faites défiler vers le bas jusqu'à **Context sets** (Ensembles de contexte).
-3. Cliquez sur le bouton d'action (les trois petits points) et sélectionnez **Create context set** (Créer un ensemble de contexte).
-4. Remplissez les champs :
+1. Téléchargez le fichier `querydata_cinema_contextset.json` généré depuis votre Cloud Shell vers votre ordinateur local.
+2. Dans la console GCP d'AlloyDB, ouvrez **AlloyDB Studio** (assurez-vous d'être connecté à la base de données `cinema_db` en utilisant l'**authentification IAM**).
+3. Dans la barre latérale de gauche, faites défiler vers le bas jusqu'à **Context sets** (Ensembles de contexte).
+4. Cliquez sur le bouton d'action (les trois petits points) et sélectionnez **Create context set** (Créer un ensemble de contexte).
+5. Remplissez les champs :
    *   **Name** : `cinema_context`
    *   **Description** : `Contexte QueryData avancé pour la gestion du cinéma`
-   *   **Upload context file** : Importez le fichier `querydata_cinema_contextset.json` créé localement sur votre ordinateur.
+   *   **Upload context file** : Importez votre fichier `querydata_cinema_contextset.json` téléchargé.
 6. Cliquez sur **Save**.
 
 ### 3.3 Valider le comportement de QueryData
@@ -511,7 +525,7 @@ Une fois enregistré :
 
 ---
 
-## 🛠️ Étape 4 : Créer un agent avec ADK et MCP Toolbox for databases (15 min)
+## 🛠️ Étape 4 : Sécurisation des accès avec MCP et l'Agent Sémantique (15 min)
 
 Pour s'assurer que les agents IA accèdent de manière sécurisée et contrôlée aux bases de données, nous utilisons le **Model Context Protocol (MCP)** et le serveur **MCP Toolbox for databases**.
 
